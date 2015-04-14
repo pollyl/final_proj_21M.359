@@ -18,6 +18,7 @@ from clock import *
 from synth import *
 # from metro import *
 
+
 import rtmidi_python as rtmidi
 
 from kivy.uix.label import Label
@@ -92,7 +93,10 @@ class MainWidget(BaseWidget) :
    # incoming midi message (on a separate thread)
    def on_midi_in(self, message, time_stamp):
       print message
-      """cmd, key, vel = message
+      if len(message) == 0:
+         return
+
+      cmd, key, vel = message
 
       # only listen to note-on msgs:
       if cmd != 144:
@@ -108,7 +112,7 @@ class MainWidget(BaseWidget) :
 
       # otherwise, just flash buttons
       color = [12, 60][vel > 0]
-      self.midi_out.send_message([144, key, color])"""
+      self.midi_out.send_message([144, key, color])
 
    # helper function for setting the correct color on a launchpad button
    def _set_color(self, x, y):
