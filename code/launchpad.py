@@ -52,7 +52,7 @@ class MainWidget(BaseWidget) :
       self.add_widget(self.info)
 
       # midi setup
-      #self.midi_out = open_midi_out("Launchpad")
+      self.midi_out = open_midi_out("Launchpad")
       self.midi_in = open_midi_in("Launchpad", self.on_midi_in)
 
       # thread setup for higher-resolution song polling
@@ -91,7 +91,8 @@ class MainWidget(BaseWidget) :
 
    # incoming midi message (on a separate thread)
    def on_midi_in(self, message, time_stamp):
-      cmd, key, vel = message
+      print message
+      """cmd, key, vel = message
 
       # only listen to note-on msgs:
       if cmd != 144:
@@ -107,7 +108,7 @@ class MainWidget(BaseWidget) :
 
       # otherwise, just flash buttons
       color = [12, 60][vel > 0]
-      self.midi_out.send_message([144, key, color])
+      self.midi_out.send_message([144, key, color])"""
 
    # helper function for setting the correct color on a launchpad button
    def _set_color(self, x, y):
@@ -116,7 +117,7 @@ class MainWidget(BaseWidget) :
       self.midi_out.send_message([144, key, color])
 
 
-# A thread class that calls on_update() on a song more frequently so as to have 
+# A thread class that calls on_update() on a song more frequently so as to have
 # smoother, higher-resolution scheduling
 class myThread (threading.Thread):
    def __init__(self, song):
@@ -139,7 +140,7 @@ class myThread (threading.Thread):
 # Implements a step sequencer.
 # width is # of steps
 # pitches is a list of pitches. Length of list is height of sequencer.
-# callback(step, hits) is called on every step with the list of indicies 
+# callback(step, hits) is called on every step with the list of indicies
 # that are active on at that step.
 class StepSequencer(Track):
    def __init__(self, synth, pitches, width, callback = None):
@@ -214,12 +215,12 @@ def launch_xy_to_key(x,y):
 
 
 # helper for opening a midi port by name
-def open_midi_out(name):      
+def open_midi_out(name):
    midi_out = rtmidi.MidiOut()
    for i, port_name in enumerate(midi_out.ports):
-       if name in port_name:
-         midi_out.open_port(i)
-         return midi_out
+       #if name in port_name:
+       midi_out.open_port(i)
+       return midi_out
    raise Exception ("Error: Can't find Midi Out port with name " + name)
 
 
@@ -227,10 +228,9 @@ def open_midi_out(name):
 def open_midi_in(name, callback):
    midi_in = rtmidi.MidiIn()
    for i, port_name in enumerate(midi_in.ports):
-       if name in port_name:
-         midi_in.open_port(i)
-         midi_in.callback = callback
-         return midi_in
+      midi_in.open_port(i)
+      midi_in.callback = callback
+      return midi_in
    raise Exception ("Error: Can't find Midi In port with name " + name)
 
 
