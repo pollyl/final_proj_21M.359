@@ -36,6 +36,7 @@ class MainWidget(BaseWidget) :
       # basic audio / synth
       self.audio = Audio()
       self.synth = Synth('../FluidR3_GM.sf2')
+      self.synth.program(0 , 128, 0)
       self.audio.add_generator(self.synth)
 
       # song with Step sequencer as a track
