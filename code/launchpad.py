@@ -41,8 +41,8 @@ class MainWidget(BaseWidget) :
       # song with Step sequencer as a track
       self.song = Song()
       #self.song.add_track( Metronome( self.synth ) )
-      self.step = StepSequencer(self.synth, (35, 40, 42), 8, self.on_step_callback)
-      self.song.add_track( self.step )
+      #self.step = StepSequencer(self.synth, (35, 40, 42), 8, self.on_step_callback)
+      #self.song.add_track( self.step )
 
       # tempo
       self.song.cond.set_bpm(120)
@@ -92,9 +92,17 @@ class MainWidget(BaseWidget) :
 
    # incoming midi message (on a separate thread)
    def on_midi_in(self, message, time_stamp):
-      print message
-      if len(message) == 0:
+      hex_msg = []
+      for x in message:
+         hex_msg.append(hex(x))
+
+      if len(message) < 3:
          return
+
+      print message
+
+      if message[2] > 0:
+         self.synth.noteon(0, message[1], 100)
 
       cmd, key, vel = message
 
