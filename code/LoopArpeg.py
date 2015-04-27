@@ -1,8 +1,8 @@
-from clock_lec import kTicksPerQuarter
-from song_lec import *
+from clock import kTicksPerQuarter
+from song import *
 
 class LoopArpeg(Track):
-     def __init__(self, synth, sched, channel, bank, preset, callback = None):
+     def __init__(self, synth, sched, channel, bank, preset, notes, callback = None):
          super(LoopArpeg, self).__init__()
          self.bank = bank
          self.channel = channel
@@ -10,8 +10,12 @@ class LoopArpeg(Track):
          self.sched = sched
 
          # Set sequence of notes
-         self.notes = [(60, 1000, 2000), (62, 3000, 4000)]
-         self.loop_length = 4
+         self.notes = notes#[(60, 0, 250), (62, 1, 1000), (64, 500, 1500), (65, 1500, 2000)]
+
+         # looping info
+         self.loops = 0
+         self.offset = self.sched.cond.get_tick()
+         self.loop_duration = 2000
 
          # output parameters
          self.synth = synth
@@ -24,6 +28,7 @@ class LoopArpeg(Track):
          self.on_cmd = None
          self.off_cmd = None
 
+
      def start_recording(self):
          pass
 
@@ -35,12 +40,14 @@ class LoopArpeg(Track):
 
      def start(self):
          self.synth.program(self.channel, self.bank, self.preset)
-         now = self.sched.cond.get_tick()
 
-         # Post the first note on
-         i = (self.cur_idx + 1) % len(self.notes)
-         next_tuple = self.notes[i]
-         next_on_tick = next_tuple[1]
+         if len(self.notes) == 0:
+            return
+
+         self.offset = self.sched.cond.get_tick()
+         next_tuple = self.notes[self.cur_idx]
+         next_on_tick = self.offset + next_tuple[1]
+
          self._post_at(next_on_tick)
 
      def stop(self):
@@ -58,27 +65,30 @@ class LoopArpeg(Track):
          self.cur_idx += 1
 
          # keep in bounds:
-         self.cur_idx = self.cur_idx % notes_len
+         if self.cur_idx >= notes_len:
+            self.cur_idx = self.cur_idx % notes_len
 
          return pitch
 
      def _post_at(self, tick):
-         print "posted"
          self.on_cmd  = self.sched.post_at_tick(tick, self._noteon, None)
 
      def _noteon(self, tick, ignore):
-         print "note on"
-         print self.cur_idx
          pitch_tuple = self._get_next_pitch()
          pitch = pitch_tuple[0]
 
+         if self.cur_idx == 0:
+            self.loops += 1
+
          # play note on:
-         velocity = 60
+         velocity = 100
+         self.synth.program(self.channel, self.bank, self.preset)
          self.synth.noteon(self.channel, pitch, velocity)
 
          # post note-off:
-         duration = pitch_tuple[2] - pitch_tuple[1]
-         off_tick = tick + duration
+         #duration = pitch_tuple[2] - pitch_tuple[1]
+         #off_tick = tick + duration + self.offset
+         off_tick = (self.loops * self.loop_duration) + self.offset + pitch_tuple[2]
          self.off_cmd = self.sched.post_at_tick(off_tick, self._noteoff, pitch)
 
          # callback:
@@ -88,11 +98,14 @@ class LoopArpeg(Track):
          # post next note. quantize tick to line up with grid of current note length
          #tick -= tick % self.note_grid
          #next_beat = tick + self.note_grid
-         i = (self.cur_idx + 1) % len(self.notes)
+         #i = (self.cur_idx + 1) % len(self.notes)
+         i = self.cur_idx
          next_tuple = self.notes[i]
-         next_on_tick = next_tuple[1]
+         next_on_tick = self.loops * self.loop_duration + next_tuple[1] + self.offset
          self._post_at(next_on_tick)
 
      def _noteoff(self, tick, pitch):
-         print "note off"
          self.synth.noteoff(self.channel, pitch)
+
+     def now_str(self):
+         return ""#return str(self.notes[self.cur_idx])
