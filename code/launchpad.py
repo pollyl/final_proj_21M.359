@@ -56,8 +56,9 @@ class UIGraphics(InstructionGroup):
       self.instruments = [Rectangle(source="./images/guitar.png", pos=(50, 380), size=(80, 80)), Rectangle(source="./images/keyboard.png", pos=(50, 290), size=(80, 80)), Rectangle(source="./images/drum.png", pos=(50, 200), size=(80, 80)), Rectangle(source="./images/bass.png", pos=(50, 110), size=(80, 80))]
       self.instrument_index = 0
 
+      # create four instrument loop tracks
       self.tracks = []
-      self.tracks.append( LoopTrack((0, Window.height), (Window.width, 100),  "./images/drum.png", (0, 0.85, 0)) )
+      self.tracks.append( LoopTrack((0, Window.height), (Window.width, 100),  "./images/drum.png", (0, 0.85, 0)))
       self.tracks.append( LoopTrack((0, Window.height - 100), (Window.width, 100),  "./images/bass.png", (1, 1, 1) ) )
       self.tracks.append( LoopTrack((0, Window.height - 200), (Window.width, 100),  "./images/guitar.png", (1, 1, 1) ) )
       self.tracks.append( LoopTrack((0, Window.height - 300), (Window.width, 100),  "./images/keyboard.png", (1, 1, 1) ) )
@@ -72,19 +73,14 @@ class UIGraphics(InstructionGroup):
 
 
    def show(self):
-      """self.add(self.record_circle_color)
-      self.select_box.points = self.select_box_points[self.instrument_index]
-      self.add(self.select_box)
-      self.add(self.record_circle)
-      self.add(self.instrument_color)
-      for instrument in self.instruments:
-         self.add(instrument)"""
+      # show each track
       for t in self.tracks:
         self.add(t)
         t.show()
 
       self.tracks[0].set_active()
 
+      # add the now bar and
       self.add(Color(*(.5, .5, .5)))
       self.add(self.now_bar)
       self.add(self.divide_line)
@@ -271,7 +267,10 @@ class MainWidget(BaseWidget) :
          if self.recording:
             self.loop_array.append(note_tuple)
 
-            self.UIGraphics.add_blip(self.instrument_i, now)
+            #self.UIGraphics.add_blip(self.instrument_i, now)
+            x_frac = float(now) / self.loop_duration
+            y_frac = 0.5
+            self.UIGraphics.add_blip(self.instrument_i, x_frac, y_frac)
 
       cmd, key, vel = message
 
