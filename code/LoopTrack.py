@@ -40,7 +40,7 @@ class LoopTrack(InstructionGroup):
       pts = [0, self.top_left[1] - size[1], size[0], self.top_left[1] - size[1]]
       self.line = Line(points = pts, width=1)
 
-      self.blip_color = Color(*rgb)
+      self.blip_color = rgb
       self.active = False
 
 
@@ -59,7 +59,9 @@ class LoopTrack(InstructionGroup):
         self.color.rgb = (.5, .5, .5)
 
     def add_blip(self, tick):
+        self.add(Color(*self.blip_color))
         x = float(tick)/2000 * (Window.width - 100) + 100
         r = Rectangle(pos = (x, self.top_left[1] - self.size[1]/2.0), size = (20, 20))
         self.add(r)
+
 

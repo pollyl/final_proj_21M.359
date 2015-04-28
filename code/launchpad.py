@@ -57,10 +57,10 @@ class UIGraphics(InstructionGroup):
       self.instrument_index = 0
 
       self.tracks = []
-      self.tracks.append( LoopTrack((0, Window.height), (Window.width, 100),  "./images/drum.png", (0, 0.85, 0)) )
-      self.tracks.append( LoopTrack((0, Window.height - 100), (Window.width, 100),  "./images/bass.png", (1, 1, 1) ) )
-      self.tracks.append( LoopTrack((0, Window.height - 200), (Window.width, 100),  "./images/guitar.png", (1, 1, 1) ) )
-      self.tracks.append( LoopTrack((0, Window.height - 300), (Window.width, 100),  "./images/keyboard.png", (1, 1, 1) ) )
+      self.tracks.append( LoopTrack((0, Window.height), (Window.width, 100),  "./images/drum.png", (3/255.0, 218/255.0, 246/255.0)) )
+      self.tracks.append( LoopTrack((0, Window.height - 100), (Window.width, 100),  "./images/bass.png", (172/255.0, 215/255.0, 3/255.0) ) )
+      self.tracks.append( LoopTrack((0, Window.height - 200), (Window.width, 100),  "./images/guitar.png", (238/255.0, 205/255.0, 0.0) ) )
+      self.tracks.append( LoopTrack((0, Window.height - 300), (Window.width, 100),  "./images/keyboard.png", (246/255.0, 2/255.0, 115/255.0) ) )
 
       # now bar
       self.edit_width = Window.width - 100
@@ -85,7 +85,9 @@ class UIGraphics(InstructionGroup):
 
       self.tracks[0].set_active()
 
-      self.add(Color(*(.5, .5, .5)))
+
+      self.now_bar_color = Color(*(.5, .5, .5))
+      self.add(self.now_bar_color)
       self.add(self.now_bar)
       self.add(self.divide_line)
 
@@ -113,7 +115,8 @@ class UIGraphics(InstructionGroup):
       return self.instrument_index
 
    def add_blip(self, i, tick):
-      self.tracks[i].add_blip(tick)
+      color = self.tracks[i].add_blip(tick)
+      self.now_bar_color.rgb = color
 
 
 
@@ -122,7 +125,7 @@ class MainWidget(BaseWidget) :
       super(MainWidget, self).__init__()
 
       # Debug boolean
-      self.debug = True
+      self.debug = False
       self.pause = True
 
       # basic audio / synth
