@@ -81,8 +81,7 @@ class UIGraphics(InstructionGroup):
       self.tracks[0].set_active()
 
       # add the now bar and dividing line
-      self.now_bar_color = Color(*(.5, .5, .5))
-      self.add(self.now_bar_color)
+      self.add(Color(*(.5, .5, .5))
       self.add(self.now_bar)
       self.add(self.divide_line)
 

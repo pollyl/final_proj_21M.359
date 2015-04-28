@@ -32,12 +32,13 @@ class LoopTrack(InstructionGroup):
       self.top_left = top_left
       self.size = size
 
-      # setup icon location and size
+      # setup icon location, size, color
       icon_size = 80
       mid_y = top_left[1] - icon_size/2.0 - 10
       self.icon = Rectangle(source = icon_str , pos=(top_left[0], mid_y - icon_size/2.0), size=(icon_size, icon_size))
-
       self.color = Color(*(0, 0, 0.5), mode='hsv')
+
+      # horizontal divide line
       pts = [0, self.top_left[1] - size[1], size[0], self.top_left[1] - size[1]]
       self.line = Line(points = pts, width=1)
 
@@ -67,9 +68,13 @@ class LoopTrack(InstructionGroup):
         #x = float(tick)/self.loop_duration * (Window.width - 100) + 100
         x = x_fraction * (Window.width - 100) + 100
         y = -y_fraction * self.size + self.top_left[1]
-        r = Rectangle(pos = (x, y, size = (20, 20))
+        r = Rectangle(pos = (x, y), size = (20, 20))
 
         self.add(self.blip_color)
         self.add(r)
 
+    # TODO: check if the now bar is touching any of the loop's blips
+    # If it is, animate the blip
+    def update(self, x_frac):
+       pass
 
