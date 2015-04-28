@@ -81,7 +81,7 @@ class UIGraphics(InstructionGroup):
       self.tracks[0].set_active()
 
       # add the now bar and dividing line
-      self.add(Color(*(.5, .5, .5))
+      self.add(Color(*(.5, .5, .5)))
       self.add(self.now_bar)
       self.add(self.divide_line)
 
@@ -108,10 +108,9 @@ class UIGraphics(InstructionGroup):
    def get_instrument_index(self):
       return self.instrument_index
 
-   def add_blip(self, i, tick):
-      color = self.tracks[i].add_blip(tick)
-      self.now_bar_color.rgb = color
-
+   def add_blip(self, i, x_frac, y_frac):
+      print "adding blip"
+      self.tracks[i].add_blip(x_frac, y_frac)
 
 
 class MainWidget(BaseWidget) :
@@ -268,8 +267,8 @@ class MainWidget(BaseWidget) :
          if self.recording:
             self.loop_array.append(note_tuple)
 
-            #self.UIGraphics.add_blip(self.instrument_i, now)
             x_frac = float(now) / self.loop_duration
+            # TODO: change y_frac to depend on the midi note
             y_frac = 0.5
             self.UIGraphics.add_blip(self.instrument_i, x_frac, y_frac)
 
@@ -294,7 +293,6 @@ class myThread (threading.Thread):
          self.song.on_update()
          time.sleep(0.005)
       print "Ending Thread"
-
 
 # helper for opening a midi port by name
 def open_midi_out(name):

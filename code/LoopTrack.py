@@ -33,9 +33,9 @@ class LoopTrack(InstructionGroup):
       self.size = size
 
       # setup icon location, size, color
-      icon_size = 80
-      mid_y = top_left[1] - icon_size/2.0 - 10
-      self.icon = Rectangle(source = icon_str , pos=(top_left[0], mid_y - icon_size/2.0), size=(icon_size, icon_size))
+      self.icon_size = 80
+      mid_y = top_left[1] - self.icon_size/2.0 - 10
+      self.icon = Rectangle(source = icon_str , pos=(top_left[0], mid_y - self.icon_size/2.0), size=(self.icon_size, self.icon_size))
       self.color = Color(*(0, 0, 0.5), mode='hsv')
 
       # horizontal divide line
@@ -63,14 +63,22 @@ class LoopTrack(InstructionGroup):
         self.color.rgb = (.5, .5, .5)
 
     # TODO Polly
+    # Make the blips bubbles/circles
+    # Color (or brightness) should varry with the note being played
+    # Blip height should change w/ note played
+    # Also: add the blip to a blip_list
     def add_blip(self, x_fraction, y_fraction):
         # calculate x-coord of the blip
         #x = float(tick)/self.loop_duration * (Window.width - 100) + 100
+        print "inside add blip"
         x = x_fraction * (Window.width - 100) + 100
-        y = -y_fraction * self.size + self.top_left[1]
+        #y = -y_fraction * self.size[0] + self.top_left[1]
+        y = self.top_left[1] - self.icon_size/2.0 - 10
         r = Rectangle(pos = (x, y), size = (20, 20))
 
-        self.add(self.blip_color)
+        print "adding rect"
+        c = Color(*self.blip_color)
+        self.add(c)
         self.add(r)
 
     # TODO: check if the now bar is touching any of the loop's blips
