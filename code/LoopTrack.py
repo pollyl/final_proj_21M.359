@@ -41,7 +41,7 @@ class LoopTrack(InstructionGroup):
       pts = [0, self.top_left[1] - size[1], size[0], self.top_left[1] - size[1]]
       self.line = Line(points = pts, width=1)
 
-      self.blip_color = Color(*rgb)
+      self.blip_color = rgb
       self.active = False
 
     # show the color, instrument icon, and bottom divide line
@@ -66,8 +66,10 @@ class LoopTrack(InstructionGroup):
         # calculate x-coord of the blip
         #x = float(tick)/self.loop_duration * (Window.width - 100) + 100
         x = x_fraction * (Window.width - 100) + 100
+        y = -y_fraction * self.size + self.top_left[1]
+        r = Rectangle(pos = (x, y, size = (20, 20))
 
-        r = Rectangle(pos = (x, self.top_left[1] - self.size[1]/2.0), size = (20, 20))
         self.add(self.blip_color)
         self.add(r)
+
 
