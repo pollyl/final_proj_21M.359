@@ -58,10 +58,10 @@ class UIGraphics(InstructionGroup):
 
       # create four instrument loop tracks
       self.tracks = []
-      self.tracks.append( LoopTrack((0, Window.height), (Window.width, 100),  "./images/drum.png", (3/255.0, 218/255.0, 246/255.0)) )
-      self.tracks.append( LoopTrack((0, Window.height - 100), (Window.width, 100),  "./images/bass.png", (172/255.0, 215/255.0, 3/255.0) ) )
-      self.tracks.append( LoopTrack((0, Window.height - 200), (Window.width, 100),  "./images/guitar.png", (238/255.0, 205/255.0, 0.0) ) )
-      self.tracks.append( LoopTrack((0, Window.height - 300), (Window.width, 100),  "./images/keyboard.png", (246/255.0, 2/255.0, 115/255.0) ) )
+      self.tracks.append( LoopTrack((0, Window.height), (Window.width, 150),  "./images/drum.png", (187/360.0, 0.988, 0.965)) )
+      self.tracks.append( LoopTrack((0, Window.height - 150), (Window.width, 150),  "./images/bass.png", (72/360.0, 0.986, 0.843) ) )
+      self.tracks.append( LoopTrack((0, Window.height - 300), (Window.width, 150),  "./images/guitar.png", (52/360.0, 1.0, 0.933) ) )
+      self.tracks.append( LoopTrack((0, Window.height - 450), (Window.width, 150),  "./images/keyboard.png", (332/360.0, 0.992, 0.965) ) )
 
       # now bar
       self.edit_width = Window.width - 100
@@ -108,9 +108,9 @@ class UIGraphics(InstructionGroup):
    def get_instrument_index(self):
       return self.instrument_index
 
-   def add_blip(self, i, x_frac, y_frac):
+   def add_blip(self, i, x_frac, y_frac, note):
       print "adding blip"
-      self.tracks[i].add_blip(x_frac, y_frac)
+      self.tracks[i].add_blip(x_frac, y_frac, note)
 
 
 class MainWidget(BaseWidget) :
@@ -118,7 +118,7 @@ class MainWidget(BaseWidget) :
       super(MainWidget, self).__init__()
 
       # Debug boolean
-      self.debug = False
+      self.debug = True
       self.pause = True
 
       # basic audio / synth
@@ -212,6 +212,32 @@ class MainWidget(BaseWidget) :
          self.clock.toggle()
          self.clocks[0].toggle()
 
+
+      # TODO: HACKY TESTING CODE. REMOVE THIS
+      if keycode[1] == '1':
+         self.on_midi_in([1, 40, 66], 1)
+      if keycode[1] == '2':
+         self.on_midi_in([1, 62, 66], 1)
+      if keycode[1] == '3':
+         self.on_midi_in([1, 64, 66], 1)
+      if keycode[1] == '4':
+         self.on_midi_in([1, 65, 66], 1)
+      if keycode[1] == '5':
+         self.on_midi_in([1, 67, 66], 1)
+      if keycode[1] == '6':
+         self.on_midi_in([1, 69, 66], 1)
+      if keycode[1] == '7':
+         self.on_midi_in([1, 71, 66], 1)
+      if keycode[1] == '8':
+         self.on_midi_in([1, 86, 66], 1)
+
+
+      if keycode[1] == 'up':
+         self.on_midi_in([197, self.button_number+1], 1)
+      if keycode[1] == 'down':
+         self.on_midi_in([197, self.button_number-1], 1)
+
+
       if keycode[1] == 'q':
          # full reset of launchpad
          self.midi_out.send_message([176, 0, 0 ])
@@ -270,7 +296,7 @@ class MainWidget(BaseWidget) :
             x_frac = float(now) / self.loop_duration
             # TODO: change y_frac to depend on the midi note
             y_frac = 0.5
-            self.UIGraphics.add_blip(self.instrument_i, x_frac, y_frac)
+            self.UIGraphics.add_blip(self.instrument_i, x_frac, y_frac, note)
 
       cmd, key, vel = message
 
