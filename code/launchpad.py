@@ -113,6 +113,10 @@ class UIGraphics(InstructionGroup):
       self.tracks[i].add_blip(x_frac, y_frac, note)
 
 
+   def getLoopTracks(self):
+      return self.tracks
+
+
 class MainWidget(BaseWidget) :
    def __init__(self):
       super(MainWidget, self).__init__()
@@ -202,6 +206,12 @@ class MainWidget(BaseWidget) :
          l = LoopArpeg(self.synth, self.sched, p[0], p[1], p[2], self.loop_array);
          l.start()
          self.loop_array = []
+
+      now = self.sched.cond.get_tick() % self.loop_duration
+      x_frac = float(now) / self.loop_duration
+      currentTrack = self.UIGraphics.tracks[self.instrument_i]
+      currentTrack.on_update(x_frac)
+
 
    def on_key_down(self, keycode, modifiers):
       if keycode[1] == 'p':

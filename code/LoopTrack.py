@@ -57,6 +57,8 @@ class Bubble(InstructionGroup):
       self.time = 0
       self.on_update(0)
 
+      self.isActive = False
+
    def _set_pos(self, pos, radius):
       self.circle.pos = pos[0] - radius, pos[1] - radius
       self.circle.size = radius * 2, radius * 2
@@ -73,6 +75,13 @@ class Bubble(InstructionGroup):
 
       # continue flag
       return self.time < 3.0
+
+   def update_active_status(self, isActive):
+      self.isActive = isActive
+      if self.isActive: 
+        self.color.a = 0.5
+      else:
+        self.color.a = 1.0
 
 
 
@@ -94,7 +103,7 @@ class LoopTrack(InstructionGroup):
 
       self.blip_color = hsv
       self.active = False
-      self.blip_list = []
+      self.blip_dic = {}
 
     # show the color, instrument icon, and bottom divide line
     def show(self):
@@ -113,9 +122,6 @@ class LoopTrack(InstructionGroup):
         self.active = False
         self.color.hsv = (0, 0, 0.827)
 
-    # TODO Polly
-    # Color (or brightness) should vary with the note being played
-    # Also: add the blip to a blip_list
     def add_blip(self, x_fraction, y_fraction, note):
         # calculate x-coord of the blip
         #x = float(tick)/self.loop_duration * (Window.width - 100) + 100
@@ -123,14 +129,23 @@ class LoopTrack(InstructionGroup):
         #y = -y_fraction * self.size[0] + self.top_left[1]
 
         note_height = int(((note-40)/46.0) * 0.9 * self.size[1])
-        y = self.top_left[1] - note_height - 6
+        y = self.top_left[1] - self.size[1] + note_height + 6
 
         bubble = Bubble((x, y), 5, self.blip_color)
         self.add(bubble)
-        self.blip_list.append(bubble)
+        self.blip_dic[x_fraction] = bubble
 
-    # TODO: check if the now bar is touching any of the loop's blips
+
+    # check if the now bar is touching any of the loop's blips
     # If it is, animate the blip
-    def update(self, x_frac):
-       pass
+    def on_update(self, x_frac):
+      for target_frac in self.blip_dic.keys():
+        bubble = self.blip_dic[target_frac]
+        if x_frac < target_frac + 0.02 and x_frac > target_frac - 0.02:
+          bubble.update_active_status(True)
+        else:
+          bubble.update_active_status(False)
+          
+
+       
 
