@@ -1,5 +1,6 @@
 from clock import kTicksPerQuarter
 from song import *
+import bisect as bisect
 
 class LoopArpeg(Track):
      def __init__(self, synth, sched, channel, bank, preset, notes, callback = None):
@@ -28,23 +29,39 @@ class LoopArpeg(Track):
          self.on_cmd = None
          self.off_cmd = None
 
+         self.started = False
+
 
      def start_recording(self):
          pass
 
-     def add_note(self, note):
-         pass
+     def add_note(self, note_tuple):
+         # sort by note-on times
+         self.notes.sort(key=lambda r: r[1])
+         #current = self.notes[self.cur_idx]
+
+         # list of just note-on times
+         keys = [r[1] for r in self.notes]
+
+         # add note to correct sorted place
+         idx = bisect.bisect_left(keys, note_tuple[1])
+         self.notes.insert(idx, note_tuple)
+         #self.notes.insert(bisect.bisect_left(self.notes, 4), 4)
+
+         # update current index??
+         self.cur_idx = (idx + 1) % len(self.notes)
 
      def stop_recording(self):
          pass
 
      def start(self):
+         self.started = True
          self.synth.program(self.channel, self.bank, self.preset)
 
          if len(self.notes) == 0:
             return
 
-         self.offset = self.sched.cond.get_tick()
+         #self.offset = self.sched.cond.get_tick()
          next_tuple = self.notes[self.cur_idx]
          next_on_tick = self.offset + next_tuple[1]
 
@@ -62,7 +79,7 @@ class LoopArpeg(Track):
          # advance index
          pitch = self.notes[self.cur_idx]
          notes_len = len(self.notes)
-         self.cur_idx += 1
+         self.cur_idx = (self.cur_idx + 1) % len(self.notes)
 
          # keep in bounds:
          if self.cur_idx >= notes_len:
@@ -71,9 +88,11 @@ class LoopArpeg(Track):
          return pitch
 
      def _post_at(self, tick):
+         print "post at"
          self.on_cmd  = self.sched.post_at_tick(tick, self._noteon, None)
 
      def _noteon(self, tick, ignore):
+         print "note on"
          pitch_tuple = self._get_next_pitch()
          pitch = pitch_tuple[0]
 
@@ -89,7 +108,7 @@ class LoopArpeg(Track):
          #duration = pitch_tuple[2] - pitch_tuple[1]
          #off_tick = tick + duration + self.offset
          off_tick = (self.loops * self.loop_duration) + self.offset + pitch_tuple[2]
-         self.off_cmd = self.sched.post_at_tick(off_tick, self._noteoff, pitch)
+         #self.off_cmd = self.sched.post_at_tick(off_tick, self._noteoff, pitch)
 
          # callback:
          if self.callback:

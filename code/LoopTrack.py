@@ -33,7 +33,7 @@ class KFAnim(object):
       super(KFAnim, self).__init__()
       self.xs = xs
       self.ys = ys
-      
+
    def eval(self, t):
       return np.interp(t, self.xs, self.ys)
 
@@ -66,11 +66,11 @@ class Bubble(InstructionGroup):
    def on_update(self, dt):
       self.time += dt
 
-      # rad = self.radius_anim.eval(self.time)      
+      # rad = self.radius_anim.eval(self.time)
       # self._set_pos(self.pos, rad)
 
       pos = (self.x_anim.eval(self.time), self.y_anim.eval(self.time))
-      rad = self.radius_anim.eval(self.time)      
+      rad = self.radius_anim.eval(self.time)
       self._set_pos(pos, rad)
 
       # continue flag
@@ -78,7 +78,7 @@ class Bubble(InstructionGroup):
 
    def update_active_status(self, isActive):
       self.isActive = isActive
-      if self.isActive: 
+      if self.isActive:
         self.color.a = 0.5
       else:
         self.color.a = 1.0
@@ -120,7 +120,7 @@ class LoopTrack(InstructionGroup):
     # changes icon color to gray (inactive)
     def set_inactive(self):
         self.active = False
-        self.color.hsv = (0, 0, 0.827)
+        self.color.hsv = (0, 0, 0.5)
 
     def add_blip(self, x_fraction, y_fraction, note):
         # calculate x-coord of the blip
@@ -145,7 +145,7 @@ class LoopTrack(InstructionGroup):
           bubble.update_active_status(True)
         else:
           bubble.update_active_status(False)
-          
 
-       
+
+
 

@@ -16,6 +16,7 @@ from audio import *
 from song import *
 from clock import *
 from synth import *
+from clock_lec import Metronome
 # from metro import *
 
 
@@ -71,6 +72,11 @@ class UIGraphics(InstructionGroup):
       # left dividing line
       self.divide_line = Line(points = [100, 0, 100, Window.height], width=2)
 
+      self.beat_lines = []
+      for i in range(1, 5):
+         x = i * (Window.width - 100) / 4 + 100
+         self.beat_lines.append(Line(points = [x, 0, x, Window.height], width = 2))
+
 
    def show(self):
       # show each track
@@ -84,6 +90,10 @@ class UIGraphics(InstructionGroup):
       self.add(Color(*(.5, .5, .5)))
       self.add(self.now_bar)
       self.add(self.divide_line)
+
+      self.add(Color(*(.2, .2, .2)))
+      for l in self.beat_lines:
+         self.add(l)
 
 
    def hide(self):
@@ -122,7 +132,7 @@ class MainWidget(BaseWidget) :
       super(MainWidget, self).__init__()
 
       # Debug boolean
-      self.debug = True
+      self.debug = False
       self.pause = True
 
       # basic audio / synth
@@ -135,6 +145,8 @@ class MainWidget(BaseWidget) :
       self.cond = Conductor(self.clock)
       self.cond.set_bpm(120)
       self.sched = Scheduler(self.cond)
+      #self.metro = Metronome(self.sched, self.synth)
+      #self.metro.start()
 
       # midi instrument settings
       self.instrument_i = 0
@@ -147,7 +159,8 @@ class MainWidget(BaseWidget) :
       self.loop_array = []
       self.loops = []
       for p in self.midi_instruments:
-         self.loops.append(LoopArpeg(self.synth, self.sched, p[0], p[1], p[2], self.loop_array))
+         self.loops.append(LoopArpeg(self.synth, self.sched, p[0], p[1], p[2], []))
+
       self.loop_duration = 2000
       self.recording = True
 
@@ -185,9 +198,13 @@ class MainWidget(BaseWidget) :
       self.canvas.add(self.UIGraphics)
       self.UIGraphics.show()
 
+      self.clock.toggle()
+
 
    def on_update(self):
       self.sched.on_update()
+
+      #print self.loops[0].notes
 
       #self.info.text = "%d fps\naudio:%s" % (kivyClock.get_fps(), self.audio.get_load())
 
@@ -196,16 +213,16 @@ class MainWidget(BaseWidget) :
       self.UIGraphics.now_bar.points = [x, 0, x, Window.height]
 
       i = self.UIGraphics.get_instrument_index()
-      tick = self.clocks[i].get_time() * (120 / 60.) * kTicksPerQuarter
+      #tick = self.clock.get_time() * (120 / 60.) * kTicksPerQuarter
 
-      if tick > self.loop_duration and self.recording:
+      """if tick > self.loop_duration and self.recording:
          self.recording = False
 
          # recreate loop
          p = self.midi_instruments[i]
          l = LoopArpeg(self.synth, self.sched, p[0], p[1], p[2], self.loop_array);
          l.start()
-         self.loop_array = []
+         self.loop_array = []"""
 
       now = self.sched.cond.get_tick() % self.loop_duration
       x_frac = float(now) / self.loop_duration
@@ -217,14 +234,14 @@ class MainWidget(BaseWidget) :
       if keycode[1] == 'p':
          self.song.toggle()
 
-      if keycode[1] == 'z':
+      """if keycode[1] == 'z':
          self.pause = not self.pause
          self.clock.toggle()
-         self.clocks[0].toggle()
+         self.clocks[0].toggle()"""
 
 
       # TODO: HACKY TESTING CODE. REMOVE THIS
-      if keycode[1] == '1':
+      """if keycode[1] == '1':
          self.on_midi_in([1, 40, 66], 1)
       if keycode[1] == '2':
          self.on_midi_in([1, 62, 66], 1)
@@ -239,14 +256,13 @@ class MainWidget(BaseWidget) :
       if keycode[1] == '7':
          self.on_midi_in([1, 71, 66], 1)
       if keycode[1] == '8':
-         self.on_midi_in([1, 86, 66], 1)
+         self.on_midi_in([1, 86, 66], 1)"""
 
 
       if keycode[1] == 'up':
          self.on_midi_in([197, self.button_number+1], 1)
       if keycode[1] == 'down':
          self.on_midi_in([197, self.button_number-1], 1)
-
 
       if keycode[1] == 'q':
          # full reset of launchpad
@@ -269,13 +285,10 @@ class MainWidget(BaseWidget) :
          instrument_i = self.UIGraphics.get_instrument_index()
          if message[1] > self.button_number:
             if message[0] == 197:
-               self.instrument_i = (instrument_i - 1) % 4
+               self.instrument_i = (instrument_i + 1) % 4
                self.UIGraphics.set_instrument_index(self.instrument_i)
                self.button_number = message[1]
                self.synth.program(*self.midi_instruments[self.instrument_i])
-
-               self.recording = True
-               self.clocks[self.instrument_i].toggle()
 
          elif message[1] < self.button_number:
             if message[0] == 197:
@@ -284,8 +297,6 @@ class MainWidget(BaseWidget) :
                self.button_number = message[1]
                self.synth.program(*self.midi_instruments[self.instrument_i])
 
-               self.recording = True
-               self.clocks[self.instrument_i].toggle()
          return
 
       # parse midi note message
@@ -299,9 +310,14 @@ class MainWidget(BaseWidget) :
 
          # record note
          now = self.sched.cond.get_tick() % self.loop_duration
-         note_tuple =  (note, now, now + 1500)
+         note_tuple =  (note, now, now + 500)
          if self.recording:
-            self.loop_array.append(note_tuple)
+            #self.loop_array.append(note_tuple)
+            self.loops[self.instrument_i].add_note(note_tuple)
+
+            # if wasn't already on, start the loop
+            if not self.loops[self.instrument_i].started:
+                self.loops[self.instrument_i].start()
 
             x_frac = float(now) / self.loop_duration
             # TODO: change y_frac to depend on the midi note
