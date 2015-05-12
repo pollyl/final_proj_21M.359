@@ -16,7 +16,7 @@ from audio import *
 from song import *
 from clock import *
 from synth import *
-from clock_lec import Metronome
+# from clock_lec import Metronome
 # from metro import *
 
 
@@ -152,7 +152,7 @@ class MainWidget(BaseWidget) :
       self.instrument_i = 0
 
       # Create separate midi instruments
-      self.midi_instruments = [(0, 128, 0), (0, 0, 34), (1, 0, 36), (0, 0, 1)]
+      self.midi_instruments = [(0, 128, 0), (0, 0, 36), (1, 0, 36), (0, 0, 1)]
       self.clocks = [Clock(), Clock(), Clock(), Clock()]
 
       # Create LoopArps
@@ -278,7 +278,7 @@ class MainWidget(BaseWidget) :
       if len(message) < 1:
          return
 
-      #print message
+      # print message
 
       # use green and red buttons to change instrument selection
       if len(message) == 2:
@@ -303,8 +303,25 @@ class MainWidget(BaseWidget) :
       elif message[2] > 0:
          print self.midi_instruments[self.instrument_i]
          self.synth.program(*self.midi_instruments[self.instrument_i])
-         # Play note
-         note = message[1]
+
+         # Play note, drum notes remapped
+         if self.instrument_i != 0:
+            note = message[1]
+         else:
+            string = message[0]
+            if string == 149:
+               note = 36
+            if string == 148:
+               note = 40
+            if string == 147:
+               note = 39
+            if string == 146:
+               note = 51
+            if string == 145:
+               note = 69
+            if string == 144:
+               note = 49
+
          velocity = 100
          self.synth.noteon(0, note, velocity)
 
