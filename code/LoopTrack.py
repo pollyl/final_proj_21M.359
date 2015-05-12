@@ -115,6 +115,8 @@ class LoopTrack(InstructionGroup):
       self.sun.start_color_variance = [.2, .2, .2, 0]
       self.sun.end_color = [c.r, c.g, c.b, 1.]
       self.sun.end_color_variance = [.2, .2, .2, 0]
+      self.sun.emitter_x = -100
+      self.sun.emitter_y = -100
 
 
     # show the color, instrument icon, and bottom divide line
@@ -124,7 +126,7 @@ class LoopTrack(InstructionGroup):
         self.add(self.line)
 
         # particles
-        self.show_particles(self.sun, (300, 300))
+        self.show_particles(self.sun, (-100, -100))
         #print Window.children
 
 
