@@ -310,17 +310,17 @@ class MainWidget(BaseWidget) :
          else:
             string = message[0]
             if string == 149:
-               note = 36
+               note = 36 # kick
             if string == 148:
-               note = 40
+               note = 40 # snare
             if string == 147:
-               note = 39
+               note = 39 # hand clap
             if string == 146:
-               note = 51
+               note = 51 # ride
             if string == 145:
-               note = 69
+               note = 69 # cabasa
             if string == 144:
-               note = 49
+               note = 49 # crash
 
          velocity = 100
          self.synth.noteon(0, note, velocity)
