@@ -22,6 +22,9 @@ from kivy.graphics import Color, Ellipse, Rectangle, Line
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 from kivy.clock import Clock as kivyClock
 
+from kivyparticle import ParticleSystem
+from kivy.properties import NumericProperty, BooleanProperty, ListProperty, StringProperty, ObjectProperty
+
 import numpy as np
 import threading
 import time
@@ -79,7 +82,7 @@ class Bubble(InstructionGroup):
    def update_active_status(self, isActive):
       self.isActive = isActive
       if self.isActive:
-        self.color.a = 0.5
+        self.color.a = 0.0
       else:
         self.color.a = 1.0
 
@@ -105,12 +108,36 @@ class LoopTrack(InstructionGroup):
       self.active = False
       self.blip_dic = {}
 
+      # setup particles
+      c = Color(*hsv, mode='hsv')
+      self.sun = ParticleSystem('media/fireworks2.pex')
+      self.sun.start_color = [c.r, c.g, c.b, 1.]
+      self.sun.start_color_variance = [.2, .2, .2, 0]
+      self.sun.end_color = [c.r, c.g, c.b, 1.]
+      self.sun.end_color_variance = [.2, .2, .2, 0]
+
+
     # show the color, instrument icon, and bottom divide line
     def show(self):
         self.add(self.color)
         self.add(self.icon)
         self.add(self.line)
-        print "show"
+
+        # particles
+        self.show_particles(self.sun, (300, 300))
+        #print Window.children
+
+
+    def hide_particles(self):
+       print "hiding"
+       Window.remove_widget(self.sun)
+       #self.sun.stop(True)
+
+    def show_particles(self, particles, pos):
+       particles.emitter_x = pos[0]
+       particles.emitter_y = pos[1]
+       Window.add_widget(self.sun)
+       particles.start()
 
     # changes icon color to white (active)
     def set_active(self):
@@ -131,20 +158,45 @@ class LoopTrack(InstructionGroup):
         note_height = int(((note-40)/46.0) * 0.9 * self.size[1])
         y = self.top_left[1] - self.size[1] + note_height + 6
 
-        bubble = Bubble((x, y), 5, self.blip_color)
+        bubble = Bubble((x, y), 3, self.blip_color)
         self.add(bubble)
         self.blip_dic[x_fraction] = bubble
 
+        """p = ParticleSystem('media/fireworks2.pex')
+        p.max_num_particles = 25
+        self.show_particles(p, (x, y))
+        self.particle_dic[x_fraction] = p"""
+
+
+    def clear(self):
+       for key in self.blip_dic:
+         bubble = self.blip_dic[key]
+         self.remove(bubble)
+       self.blip_dic = {}
+       # super janky way of hiding emitter after clearing
+       self.sun.emitter_x = -100
+       self.sun.emitter_y = -100
 
     # check if the now bar is touching any of the loop's blips
     # If it is, animate the blip
     def on_update(self, x_frac):
       for target_frac in self.blip_dic.keys():
+        #print "keys"
+        #print self.blip_dic.keys()
+        #print self.particle_dic.keys()
         bubble = self.blip_dic[target_frac]
-        if x_frac < target_frac + 0.02 and x_frac > target_frac - 0.02:
+
+        if x_frac < target_frac + 0.08 and x_frac > target_frac - 0.02:
           bubble.update_active_status(True)
+          #particles.start()
+          #self.show_particles(self.sun, (bubble.pos[0], bubble.pos[1]))
+          self.sun.emitter_x = bubble.pos[0]
+          self.sun.emitter_y = bubble.pos[1]
+
         else:
           bubble.update_active_status(False)
+          #self.hide_particles()
+
 
 
 

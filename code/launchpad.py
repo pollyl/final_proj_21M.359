@@ -132,7 +132,7 @@ class MainWidget(BaseWidget) :
       super(MainWidget, self).__init__()
 
       # Debug boolean
-      self.debug = False
+      self.debug = True
       self.pause = True
 
       # basic audio / synth
@@ -226,13 +226,25 @@ class MainWidget(BaseWidget) :
 
       now = self.sched.cond.get_tick() % self.loop_duration
       x_frac = float(now) / self.loop_duration
-      currentTrack = self.UIGraphics.tracks[self.instrument_i]
-      currentTrack.on_update(x_frac)
+      for i in range(0, len(self.UIGraphics.tracks)):
+          self.UIGraphics.tracks[i].on_update(x_frac)
 
 
    def on_key_down(self, keycode, modifiers):
       if keycode[1] == 'p':
          self.song.toggle()
+
+      if keycode[1] == 'x':
+         self.loops[self.instrument_i].clear()
+         self.UIGraphics.tracks[self.instrument_i].clear()
+
+      if keycode[1] == 'c':
+         for i in range(0, 4):
+            self.UIGraphics.tracks[i].hide_particles()
+
+      """if keycode[1] == 'v':
+         for i in range(0, 4):
+            self.UIGraphics.tracks[i].show_particles()"""
 
       """if keycode[1] == 'z':
          self.pause = not self.pause
@@ -241,7 +253,7 @@ class MainWidget(BaseWidget) :
 
 
       # TODO: HACKY TESTING CODE. REMOVE THIS
-      """if keycode[1] == '1':
+      if keycode[1] == '1':
          self.on_midi_in([1, 40, 66], 1)
       if keycode[1] == '2':
          self.on_midi_in([1, 62, 66], 1)
@@ -256,7 +268,7 @@ class MainWidget(BaseWidget) :
       if keycode[1] == '7':
          self.on_midi_in([1, 71, 66], 1)
       if keycode[1] == '8':
-         self.on_midi_in([1, 86, 66], 1)"""
+         self.on_midi_in([1, 86, 66], 1)
 
 
       if keycode[1] == 'up':
@@ -307,7 +319,7 @@ class MainWidget(BaseWidget) :
          note = message[1]
          velocity = 100
          self.synth.noteon(0, note, velocity)
-
+         print message
          # record note
          now = self.sched.cond.get_tick() % self.loop_duration
          note_tuple =  (note, now, now + 500)

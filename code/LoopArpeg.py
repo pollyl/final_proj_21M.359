@@ -30,12 +30,23 @@ class LoopArpeg(Track):
          self.off_cmd = None
 
          self.started = False
+         self.cleared = False
 
+     def clear(self):
+        self.cleared = True
+        self.cur_idx = 0
+        self.notes = []
 
      def start_recording(self):
          pass
 
      def add_note(self, note_tuple):
+         if len(self.notes) == 0 and self.cleared:
+            self.notes.append(note_tuple)
+            next_on_tick = self.offset + note_tuple[1]
+            self._post_at(next_on_tick)
+
+         self.cleared = False
          # sort by note-on times
          self.notes.sort(key=lambda r: r[1])
          #current = self.notes[self.cur_idx]
@@ -88,11 +99,15 @@ class LoopArpeg(Track):
          return pitch
 
      def _post_at(self, tick):
-         print "post at"
+         #print "post at"
          self.on_cmd  = self.sched.post_at_tick(tick, self._noteon, None)
 
      def _noteon(self, tick, ignore):
-         print "note on"
+         #print "note on"
+
+         if len(self.notes) == 0 and self.cleared:
+            return
+
          pitch_tuple = self._get_next_pitch()
          pitch = pitch_tuple[0]
 
