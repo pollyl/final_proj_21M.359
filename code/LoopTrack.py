@@ -155,7 +155,7 @@ class LoopTrack(InstructionGroup):
         x = x_fraction * (Window.width - 100) + 105
         #y = -y_fraction * self.size[0] + self.top_left[1]
 
-        note_height = int(((note-40)/46.0) * 0.9 * self.size[1])
+        note_height = int(((note-35)/51.0) * 0.9 * self.size[1])
         y = self.top_left[1] - self.size[1] + note_height + 6
 
         bubble = Bubble((x, y), 3, self.blip_color)
