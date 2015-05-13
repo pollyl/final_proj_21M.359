@@ -22,7 +22,9 @@ class Audio(object):
       super(Audio, self).__init__()
 
       self.audio = pyaudio.PyAudio()
-      dev_idx = self._find_best_output()
+      out_idx = self._find_device_name("Built-in Output")
+      in_idx = self._find_device_name("C-Media USB Headphone Set")
+
 
       self.stream = self.audio.open(format = pyaudio.paFloat32,
                                     channels = kOutputChannels,
@@ -30,8 +32,20 @@ class Audio(object):
                                     rate = kSamplingRate,
                                     output = True,
                                     input = False,
-                                    output_device_index = dev_idx,
+                                    output_device_index = out_idx,
+                                    input_device_index = in_idx,
                                     stream_callback = self._callback)
+
+      self.stream2 = self.audio.open(format = pyaudio.paFloat32,
+                                    channels = 1,
+                                    frames_per_buffer = 512,
+                                    rate = kSamplingRate,
+                                    output = True,
+                                    input = True,
+                                    output_device_index = out_idx,
+                                    input_device_index = in_idx,
+                                    stream_callback = self._callback2)
+
       self.gain = .5
       self.generators = []
       self.listener = listener
@@ -40,6 +54,9 @@ class Audio(object):
    def close(self) :
       self.stream.stop_stream()
       self.stream.close()
+
+      self.stream2.stop_stream()
+      self.stream2.close()
       self.audio.terminate()
 
    def add_generator(self, gen) :
@@ -83,10 +100,18 @@ class Audio(object):
       # did not find desired device.
       return None
 
+   def _find_device_name(self, str):
+      for i in range(self.audio.get_device_count()):
+          info = self.audio.get_device_info_by_index(i)
+          name = info["name"]
+          if name == str:
+              return i
+      print "Device not found"
+      return None
+
 
    def _callback(self, in_data, num_frames, time_info, status):
       output = np.zeros(num_frames * kOutputChannels, dtype=np.float32)
-
       # this calls generate() for each generator. generator must return:
       # (signal, keep_going). If keep_going is True, it means the generator
       # has more to generate. False means generator is done and will be
@@ -107,6 +132,10 @@ class Audio(object):
       output *= self.gain
       if self.listener:
          self.listener.audio_cb(output)
+
       return (output.tostring(), pyaudio.paContinue)
+
+   def _callback2(self, in_data, num_frames, time_info, status):
+      return (in_data, pyaudio.paContinue)
 
 
